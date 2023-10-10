@@ -1,0 +1,1 @@
+{"frames":[],"message":"Error: Incomplete expression: check_packages <- function(packages) {\n  if (all(packages %in% rownames(installed.packages()))) {\n    TRUE\n  } else{\n    cat(\n      \"Instalar los siguientes packages antes de ejecutar el presente script\\n\",\n      packages[!(packages %in% rownames(installed.packages()))],\n      \"\\n\"\n    )\n  }\n"}

@@ -1,0 +1,5 @@
+"0","variables_numericas <- internet[,3,5,7:10]"
+"0","outliers_multivariados <- mahalanobisOutlier(variables_numericas)"
+"2","Error in mahalanobisOutlier(variables_numericas) : 
+  could not find function ""mahalanobisOutlier""
+"

@@ -1,0 +1,25 @@
+
+```{r}
+a <- c(1,2,3,5)
+a
+```
+
+
+
+con ctrl + alt + i => genero un chunk
+```{r}
+?filter
+
+```
+con ctrl + shift + m => genero el pipe
+
+con ctrl + shift + k => veo el documento compilado
+
+Documentacion en Rpubs
+https://rpubs.com/VINDELL2981/RMarkdown
+
+
+```{r}
+install.packages("modeest")
+```
+

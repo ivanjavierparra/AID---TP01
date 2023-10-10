@@ -1,0 +1,4 @@
+"0","#damos nueva forma a los datos del juez 1"
+"0","# dj1= gather(sal2, key=""rubro"", value=""valor"", cord.juez1:idiom.juez1)"
+"0","dj1= gather(sal2, key=""rubro"", value=""valor"", cord.juez1:idiom.juez1)"
+"0","dj1"

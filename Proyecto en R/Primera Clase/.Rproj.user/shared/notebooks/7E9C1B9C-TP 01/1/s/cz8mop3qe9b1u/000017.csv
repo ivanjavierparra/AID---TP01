@@ -1,0 +1,2 @@
+"0","colPalette <- c(""#596791"",""#565318"",""#32CD32"",""#FF69B4"",""#FF4500"",""#20B2AB"")"
+"0","ggparcoord(internet, columns=c(3:7),groupColumn=""Nacionalidad"",showPoints=TRUE)+scale_color_manual(values = colPalette) + theme_bw()"

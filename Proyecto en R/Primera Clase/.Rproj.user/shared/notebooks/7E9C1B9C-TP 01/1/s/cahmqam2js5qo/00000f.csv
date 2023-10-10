@@ -1,0 +1,8 @@
+"0","tabla_frecuencias_sexo <- table(factor(internet$Sexo))"
+"0","df_frecuencias <- as.data.frame(tabla_frecuencias_sexo)"
+"0",""
+"0","# Renombrar las columnas"
+"0","colnames(df_frecuencias) <- c(""Valor"", ""Frecuencia"")"
+"0",""
+"0","# Mostrar la tabla de frecuencias"
+"0","print(df_frecuencias)"

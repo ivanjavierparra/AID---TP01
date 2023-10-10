@@ -1,0 +1,8 @@
+"0","View(gorriones)"
+"0","dim(gorriones) # la dimensión dice 7 columnas pero son 6 variables y 49 registros"
+"1","[1]"
+"1"," 49"
+"1","  7"
+"1","
+"
+"0","#la primer columna corresponde a el orden del registro"

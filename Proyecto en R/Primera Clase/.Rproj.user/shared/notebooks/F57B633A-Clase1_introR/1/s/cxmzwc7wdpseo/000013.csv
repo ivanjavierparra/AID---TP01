@@ -1,0 +1,3 @@
+"0","url.dat <- ""http://bit.ly/Database-Estudiantes""    # La url desde drive"
+"0","estudiantes <- read.delim(url.dat) "
+"0","estudiantes"

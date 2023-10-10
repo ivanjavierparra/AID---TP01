@@ -1,0 +1,2 @@
+"0","valores_unicos <- internet %>% distinct(internet$Sexo)"
+"0","valores_unicos"

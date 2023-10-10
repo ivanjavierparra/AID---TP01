@@ -1,0 +1,3 @@
+"0","#leemos los datos"
+"0","recepcionistas <- read_excel(""../../recepcionistas.xls"")"
+"0","recepcionistas"

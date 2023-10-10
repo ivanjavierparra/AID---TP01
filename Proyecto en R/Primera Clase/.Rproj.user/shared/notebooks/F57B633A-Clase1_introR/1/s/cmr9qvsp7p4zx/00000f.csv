@@ -1,0 +1,5 @@
+"0","baseIMC<-baseIMC %>%"
+"0","  mutate(forma = round(TALLA/CC,3))"
+"2","Error in baseIMC %>% mutate(forma = round(TALLA/CC, 3)) : 
+  could not find function ""%>%""
+"

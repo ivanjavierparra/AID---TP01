@@ -1,0 +1,2 @@
+"0","aux <- recepcionistas %>% mutate(promedio = rowMeans(recepcionistas[,2:7]))"
+"0","aux"

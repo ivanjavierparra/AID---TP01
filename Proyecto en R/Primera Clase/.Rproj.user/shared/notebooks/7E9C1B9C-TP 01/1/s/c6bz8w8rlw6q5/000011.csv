@@ -1,0 +1,21 @@
+"0","check_packages <- function(packages) {"
+"0","  if (all(packages %in% rownames(installed.packages()))) {"
+"0","    TRUE"
+"0","  } else{"
+"0","    cat("
+"0","      ""Instalar los siguientes packages antes de ejecutar el presente script\n"","
+"0","      packages[!(packages %in% rownames(installed.packages()))],"
+"0","      ""\n"""
+"0","    )"
+"0","  }"
+"2","Error: Incomplete expression: check_packages <- function(packages) {
+  if (all(packages %in% rownames(installed.packages()))) {
+    TRUE
+  } else{
+    cat(
+      ""Instalar los siguientes packages antes de ejecutar el presente script\n"",
+      packages[!(packages %in% rownames(installed.packages()))],
+      ""\n""
+    )
+  }
+"

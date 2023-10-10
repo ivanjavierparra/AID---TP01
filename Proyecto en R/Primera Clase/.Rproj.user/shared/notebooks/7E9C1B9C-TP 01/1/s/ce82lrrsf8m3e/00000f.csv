@@ -1,0 +1,5 @@
+"0","# puntuaciones=select(recepcionistas,cord.juez1:idiom.juez2)"
+"0","puntuaciones=recepcionistas[2:7]"
+"0","promxcand=data.frame(""Cand""=cand,""Prom""=round(apply(puntuaciones,1,mean),2))"
+"0","rownames(promxcand)<-NULL"
+"0","promxcand"

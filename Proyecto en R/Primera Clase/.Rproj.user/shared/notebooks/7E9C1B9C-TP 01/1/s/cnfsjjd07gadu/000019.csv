@@ -1,0 +1,7 @@
+"0","RUBRO=as.factor(dj1$rubro)"
+"0","Candi=as.factor(dj1$cand)"
+"0","plot1=ggplot(dj1,aes(x=RUBRO,y=valor))+geom_line(aes(x=RUBRO,y=valor,group =Candi,color=Candi))+ labs(title = ""juez 1"") +"
+"0","    theme(axis.text.x  = element_text(angle=90))"
+"0","#damos nueva forma a los datos del juez 2"
+"0","dj2= gather(sal3, key=""rubro"", value=""valor"", cord.juez2:idiom.juez2)"
+"0","dj2"

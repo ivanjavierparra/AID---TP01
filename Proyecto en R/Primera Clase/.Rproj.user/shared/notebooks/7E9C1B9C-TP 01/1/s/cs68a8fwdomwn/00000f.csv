@@ -1,0 +1,6 @@
+"0","data_mod <- melt(internet, id.vars='ID', "
+"0","                  measure.vars=c('Edad', 'Autos','Temperatura','Estatura','Uso','Cigarrillos'))"
+"0",""
+"0","ggplot(data_mod) +"
+"0","geom_boxplot(aes(x=ID, y=value, fill=variable,alpha=0.2)) +"
+"0","  theme_minimal()"

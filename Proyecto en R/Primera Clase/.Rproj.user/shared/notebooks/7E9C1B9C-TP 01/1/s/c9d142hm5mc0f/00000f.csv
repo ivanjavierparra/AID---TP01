@@ -1,0 +1,1 @@
+"0","internet %>% filter(Edad <= out_edad[1] & Edad > out_edad[3])"
