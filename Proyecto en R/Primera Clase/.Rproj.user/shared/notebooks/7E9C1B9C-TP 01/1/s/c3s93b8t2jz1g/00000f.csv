@@ -1,3 +1,0 @@
-"0","# leemos la base de datos"
-"0","internet <- read_excel(""../../internet2013.xls"")"
-"0","internet"

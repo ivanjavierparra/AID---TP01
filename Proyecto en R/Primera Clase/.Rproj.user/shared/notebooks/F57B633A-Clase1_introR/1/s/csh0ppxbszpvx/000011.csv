@@ -1,5 +1,0 @@
-"0","baseIMC_aux <- baseIMC %>% "
-"0","  select(TALLA, IMC, CC) %>%"
-"0","  slice(1,5:6,5)"
-"0",""
-"0","baseIMC_aux"

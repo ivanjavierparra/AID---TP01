@@ -1,3 +1,0 @@
-"0","#estandarizamos por columna"
-"0","punt_stand=data.frame(puntuaciones%>%scale())"
-"0","punt_stand"

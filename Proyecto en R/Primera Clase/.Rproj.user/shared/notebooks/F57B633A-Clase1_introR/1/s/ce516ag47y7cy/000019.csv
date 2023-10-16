@@ -1,3 +1,0 @@
-"0","baseIMC %>%"
-"0","  filter(SEXO == 'F')%>%"
-"0","  select(SEXO,EDAD,CatPeso)"

@@ -1,8 +1,0 @@
-"0","# Restore the standard par() settings"
-"0","par <- par(opar)"
-"2","Warning: el parámetro del gráfico ""cin"" no puede ser especificado"
-"2","Warning: el parámetro del gráfico ""cra"" no puede ser especificado"
-"2","Warning: el parámetro del gráfico ""csi"" no puede ser especificado"
-"2","Warning: el parámetro del gráfico ""cxy"" no puede ser especificado"
-"2","Warning: el parámetro del gráfico ""din"" no puede ser especificado"
-"2","Warning: el parámetro del gráfico ""page"" no puede ser especificado"

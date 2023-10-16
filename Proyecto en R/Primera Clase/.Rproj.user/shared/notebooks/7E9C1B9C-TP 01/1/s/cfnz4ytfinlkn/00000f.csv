@@ -1,8 +1,0 @@
-"0","outliers <- data.frame( rbind(nrow(modAutos),nrow(modTemperatura),nrow(modEdad),"
-"0","        nrow(modEstatura),nrow(modCiga),nrow(modUso)),"
-"0","        rbind(nrow(extreAutos),nrow(extreTemperatura),nrow(extreEdad),"
-"0","        nrow(extreEstatura),nrow(extreCiga),nrow(extreUso)),"
-"0","  row.names = c('Autos','Temperatura','Edad','Estatura','Cigarrillos','Uso')"
-"0","  )"
-"0","colnames(outliers) <- c('Moderados','Extremos')"
-"0","outliers"

@@ -1,4 +1,0 @@
-"0","Rubro=as.factor(dj2$rubro)"
-"0","Candi=as.factor(dj2$cand)"
-"0","plot2=ggplot(dj2,aes(x=Rubro,y=valor))+geom_line(aes(x=Rubro,y=valor,group =Candi,color=Candi))+ labs(title = ""juez 2"")+theme(axis.text.x  = element_text(angle=90))"
-"0","ggarrange(plot1,plot2)"
