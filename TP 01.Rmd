@@ -10,21 +10,23 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-check_packages <- function(packages) {
-  if (all(packages %in% rownames(installed.packages()))) {
-    TRUE
-  } else{
-    cat(
-      "Instalar los siguientes packages antes de ejecutar el presente script\n",
-      packages[!(packages %in% rownames(installed.packages()))],
-      "\n"
-    )
-  }
+rm(list = ls()) # Borrar todos los objetos
 ```
 
+
 ```{r}
-packages_needed <- c("readxl","dplyr","kableExtra","ggplot2","tidyverse","ggpubr","ggforce","GGally","corrplot")
-check_packages(packages_needed)
+##---- Libraries 
+paquetes = c("readxl","dplyr","kableExtra","ggplot2","tidyverse","ggpubr","ggforce","GGally","corrplot")
+
+
+
+#---- Funcion para instalarlos con sus dependencias
+for(i in paquetes){
+  if(!require(i, character.only = TRUE)){
+    install.packages(i, dependencies=TRUE)
+  }
+  require(i, character.only=TRUE)
+}
 ```
 
 
@@ -59,7 +61,12 @@ library(MASS)
 
 ```{r}
 #leemos los datos
-recepcionistas <- read_excel("../../recepcionistas.xls")
+recepcionistas <- read_excel("./csv/recepcionistas.xls")
+
+colnames(recepcionistas)[colnames(recepcionistas) == "cord.juez 1"] <- "cord.juez1"
+
+colnames(recepcionistas)[colnames(recepcionistas) == "cord.juez 2"] <- "cord.juez2"
+
 recepcionistas
 
 ```
@@ -85,19 +92,17 @@ max_j2
 #coinciden los máximos? No coinciden.
 ```
 
-```{r}
-promedios <- recepcionistas %>% mutate(avg_juez1=rowMeans(datosEj1[2:4]), .after = idiom.juez1)
-promedios <- promedios %>% mutate(avg_juez2=rowMeans(promedios[5:7]))
-promedios[c(1,5,9)] %>% kbl(caption = "Promedios") %>% kable_classic(full_width =F)
-```
 
 
 ```{r}
-#datosEj1 =  readxl::read_excel("../../recepcionistas.xls")
-#datosEj1 <- datosEj1 %>% mutate(avg_juez1=rowMeans(datosEj1[2:4]), .after = idiom.juez1)
-#datosEj1 <- datosEj1 %>% mutate(avg_juez2=rowMeans(datosEj1[5:7]))
-#datosEj1[c(1,5,9)] %>% kbl(caption = "Promedios") %>% kable_classic(full_width =F)
+promedios <- recepcionistas
+promedios$avg_juez1 <- prom_j1
+promedios$avg_juez2 <- prom_j2
+
+promedios[c(1,8,9)]  %>% kbl(caption = "Promedios") %>% kable_classic(full_width =F)
 ```
+
+
 
 Juez 1
 ```{r}
@@ -112,12 +117,10 @@ promedios[which.max(promedios$avg_juez2),c(1,9)]  %>% kbl() %>% kable_classic(fu
 ¿Conciden los máximos? No, vemos que el Juez1 eligio a Mariana y Juez2 a Carla.
 
 
--  (b) Calcule el promedio de cada una de las aspirantes tomando en cuenta
-todos los rubros y ambos jueces.
+-  (b) Calcule el promedio de cada una de las aspirantes tomando en cuenta todos los rubros y ambos jueces.
 
 
 ```{r}
-# puntuaciones=select(recepcionistas,cord.juez1:idiom.juez2)
 puntuaciones=recepcionistas[2:7]
 promxcand=data.frame("Cand"=cand,"Prom"=round(apply(puntuaciones,1,mean),2))
 rownames(promxcand)<-NULL
@@ -125,15 +128,13 @@ promxcand
 ```
 
 ```{r}
-aux <- recepcionistas %>% mutate(promedio = rowMeans(recepcionistas[,2:7]))
+aux <- recepcionistas %>% mutate(promedio = round(rowMeans(recepcionistas[,2:7]),2))
 aux
 
 ```
 
 
--  (c) Transformar las puntuaciones observadas de modo tal que cada una de
-las seis variables tenga media 0 y dispersión 1. ¿Cuál sería el objetivo de
-esta transformación?
+-  (c) Transformar las puntuaciones observadas de modo tal que cada una de las seis variables tenga media 0 y dispersión 1. ¿Cuál sería el objetivo de esta transformación?
 
 ```{r}
 #estandarizamos por columna
@@ -147,8 +148,7 @@ Llevar las variables a media 0 y desvío 1 es equivalente a decir que se la conv
 
 
 
--  (d) Transformar las puntuaciones de modo tal que cada candidata tenga para
-cada juez media 0 y dispersión 1. ¿Cuál sería el objetivo de esta transformación?
+-  (d) Transformar las puntuaciones de modo tal que cada candidata tenga para cada juez media 0 y dispersión 1. ¿Cuál sería el objetivo de esta transformación?
 
 
 ```{r}
@@ -170,19 +170,7 @@ Entiendo que la utilidad de esto es normalizar los criterios de juicio a una mis
 
 
 
-- (e) Grafique los perfiles multivariados de cada una de las candidatas para
-ambas transformaciones. ¿Qué observa?
-
-```{r}
-juez1 <- juez1 %>% 
-  rename("cord.juez1" = `cord.juez 1`)
-```
-
-```{r}
-juez2 <- juez2 %>% 
-  rename("cord.juez2" = `cord.juez 2`)
-```
-
+- (e) Grafique los perfiles multivariados de cada una de las candidatas para ambas transformaciones. ¿Qué observa?
 
 
 ```{r}
@@ -226,17 +214,29 @@ Se han registrado sobre 1500 individuos las variables siguientes:
 
 ```{r}
 # leemos la base de datos
-internet <- read_excel("../../internet2013.xls")
+internet <- read_excel("./csv/internet2013.xls")
 internet
 ```
 
-- (a) Clasificar las variables de la base. Para las variables numéricas construir
-un gráfico de coordenadas paralelas.
+- (a) Clasificar las variables de la base. Para las variables numéricas construir un gráfico de coordenadas paralelas.
 
-ID, Edad, Uso, Temperatura, Autos, Cigarrillos son variables discretas 
-Estatura es continua (medicion). 
-Nacionalidad es categórica 
-Sexo, Sitio (las vamos a considerar un factor).
+Nacionalidad Categórica
+
+Edad: continua discretizada
+
+Sexo: categórica
+
+Estatura: cuantitativa continua
+
+Sitio: categórica
+
+Uso: cuantitativa continua
+
+Temperatura: cuantitativa continua
+
+Autos: cuantitativa discreta
+
+Cigarrillos: cuantitativa discreta
 
 ```{r}
 # Consultar los tipos de variables (columnas)
@@ -249,18 +249,36 @@ print(tipos_de_variables)
 Gráfico de coordenadas paralelas para variables numericas
 
 ```{r}
-colPalette <- c("#596791","#565318","#32CD32","#FF69B4","#FF4500","#20B2AB")
-ggparcoord(internet, columns=c(3:7),groupColumn="Nacionalidad",showPoints=TRUE)+scale_color_manual(values = colPalette) + theme_bw()
-#graf1+ facet_wrap(.~Variedad,nrow=2)
+grafica <- ggparcoord(internet, columns=c(3,5,7:10), groupColumn="Nacionalidad")
+grafica+theme_bw()
 ```
 
 
-- (b) Construir la tabla de frecuencias de la variable sexo. ¿Hay algún valor
-que llame la atención? ¿Qué tipo de error considera que es?
 
+```{r}
+colPalette <- c("#596791","#565318","#32CD32","#FF69B4","#FF4500","#20B2AB")
+ggparcoord(internet, columns=c(3,5,7:10),
+           groupColumn="Nacionalidad",
+           showPoints=TRUE)+scale_color_manual(values = colPalette) + theme_bw()
+#graf1+ facet_wrap(.~Variedad,nrow=2)
+```
+
+Esta gráfica no es adecuada para visualizar tantos individuos y conviene cuando los datos están agrupados.
+
+
+
+- (b) Construir la tabla de frecuencias de la variable sexo. ¿Hay algún valor que llame la atención? ¿Qué tipo de error considera que es?
+
+
+**Sexo**
 ```{r}
 valores_unicos <- internet %>% distinct(internet$Sexo)
 valores_unicos
+```
+
+
+```{r}
+internet$Sexo %>% table()
 ```
 
 
@@ -274,22 +292,25 @@ colnames(df_frecuencias) <- c("Valor", "Frecuencia")
 # Mostrar la tabla de frecuencias
 print(df_frecuencias)
 ```
-Hay un valor 0, eso no corresponde a ninguna opcion tabulada.
+Hay un valor 0, eso no corresponde a ninguna opcion tabulada, parece ser un error de tipeo.
 
 
 
 
-- (c) Ordenar los datos por la variable Edad. ¿Encontró algún valor extraño?
-¿Qué tipo de error puede ser? item Construir la tabla de frecuencias de
-la variable Sitio. ¿Encuentra algún valor que le llame la atención? ¿Qué
-tipo de error puede ser?
+- (c) Ordenar los datos por la variable Edad.¿Encontró algún valor extraño? ¿Qué tipo de error puede ser? 
 
+
+**Edad**
 ```{r}
 internet %>% arrange(Edad)
 ```
-Claramente hay un error de carga. El signo negativo es imposible en la edad y 120, 180 y 280 tampoco son posibles o plausibles… los otros valores pueden ser. Salvo el registro 1432 donde un bebé 1 año mide 1,65.
+
+```{r}
+internet$Edad%>%summary()
+```
 
 
+Claramente hay un error de carga. El signo negativo es imposible en la edad y 120, 180 y 280 tampoco son años posibles (personas centenarias). Por otro lado, hay atos raros, como el registro 1432 donde un bebé 1 año mide 1,65.
 
 ```{r}
 tabla_frecuencias_edad <- table(factor(internet$Edad))
@@ -301,27 +322,24 @@ colnames(df_frecuencias_edad) <- c("Valor", "Frecuencia")
 # Mostrar la tabla de frecuencias
 print(df_frecuencias_edad)
 ```
-Lo que veo en edad es que hay personas con edades negativas y personas centenarias.
 
-Construimos el boxplot:
-```{r}
-#boxplot(df_frecuencias_edad$Valor, main = "Boxplot de Edades")
-edades_no_negativas <- internet %>% filter(Edad > 0) 
-bp <- boxplot(edades_no_negativas$Edad, main = "Boxplot de Edades")
-identify(bp$out, labels = edades_no_negativas$Edad[bp$out])
+Hay 3 registros con edades superarios a 100 (120,180,200) cuyos id respectivos son 319, 1466 y 398. Hay registros con edades negativas, cuyo od es 661. Claramente estos son errores de carga.
+Después hay algo extraño, una persona de 1 año con una altura de 1,61 (id = 1432)
 
-```
-          
-Para el tipo de error, outlier moderado o severo.
-```{r}
 
-```
 
-Ahora analizamos la variable Sitio
+**Sitio**          
+Construir la tabla de frecuencias de la variable Sitio. ¿Encuentra algún valor que le llame la atención? ¿Qué tipo de error puede ser?
 
 ```{r}
 internet %>% arrange(Sitio)
 ```
+
+
+```{r}
+internet$Sitio%>%summary()
+```
+
 
 ```{r}
 tabla_frecuencias_sitio <- table(factor(internet$Sitio))
@@ -334,27 +352,19 @@ colnames(df_frecuencias_sitio) <- c("Valor", "Frecuencia")
 print(df_frecuencias_sitio)
 ```
 
-Construimos el boxplot para Sitio
 
-```{r}
-bp <- boxplot(internet$Sitio, main = "Boxplot de Sitio")
-identify(bp$out, labels = edades_no_negativas$Sitio[bp$out])
-```
-
-Falta clasificar los outliers
-```{r}
-
-```
+Los sitios 8 y 28 no existen, debe ser un error de carga o tipeo.
+Los valores posibles de Sitio deberían ir de 1 a 7. Sin embargo tenemos valores mayores (ID 800 y 907)
 
 
 
 - (d) Proceda de forma similar para las variables Temperatura, Autos y Cigarrillos.
 
-Temperatura
+
+**Temperatura**
 
 ```{r}
-internet %>% arrange(-Temperatura)
-
+internet[,8] %>% arrange(-Temperatura)
 ```
 
 ```{r}
@@ -367,19 +377,26 @@ colnames(df_temp) <- c("Valor", "Frecuencia")
 # Mostrar la tabla de frecuencias
 print(df_temp)
 ```
-
-
 ```{r}
-bp <- boxplot(internet$Temperatura, main = "Boxplot de Temperatura")
-identify(bp$out, labels = internet$Temperatura[bp$out])
+internet[,8]%>%summary()
+
 ```
 
 
+Temperatura
+Hay dos valores de temperatura que son extraños: 94 y 131 (id 1112 y 1157). Parecen ser errores de tipeo.
 
-Autos
+
+
+
+
+**Autos**
 ```{r}
-internet %>% arrange(-Autos)
+internet[,9] %>% arrange(-Autos)
 
+```
+```{r}
+internet[,9]%>%summary()
 ```
 
 
@@ -394,17 +411,19 @@ colnames(df_autos) <- c("Valor", "Frecuencia")
 print(df_autos %>%  arrange(-Frecuencia) )
 ```
 
-```{r}
-bp <- boxplot(internet$Autos, main = "Boxplot de Autos")
-identify(bp$out, labels = internet$Autos[bp$out])
-```
+Hay un valor atípico en Autos que es 2680 autos en a la manzana (id 836). Hay un valor que no corresponde 74.5 (id 1374). Ambos parecen ser errores de tipeo.
 
 
-Cigarrillos
+
+**Cigarrillos**
 ```{r}
-internet %>% arrange(Cigarrillos)
+internet[,10] %>% arrange(-Cigarrillos)
 
 ```
+```{r}
+internet[,10]%>%summary()
+```
+
 
 ```{r}
 tf_cig <- table(factor(internet$Cigarrillos))
@@ -417,37 +436,16 @@ colnames(df_cig) <- c("Valor", "Frecuencia")
 print(df_cig)
 ```
 
-
-```{r}
-bp <- boxplot(internet$Cigarrillos, main = "Boxplot de Cigarillos")
-identify(bp$out, labels = internet$Cigarrillos[bp$out])
-```
-
-- (e) Elimine de la base los valores que no son posibles y que seguramente
-corresponde a un error de tipeo. Detalle valores/registros que le hayan
-llamado la atención pero no deban ser eliminados necesariamente
-
-Sexo
-Para la variable Sexo tenemos un valor atípico que es el 0, cuya frecuencia es de 1.
-
-Edad
-Hay 3 registros con edades superarios a 100 (20,180,200) cuyos id respectivos son 319, 1466 y 398. Hay registros con edades negativas, cuyo od es 661. Claramente estos son errores de carga.
-Después hay algo extraño, una persona de 1 año con una altura de 1,61 (id = 1432)
+Llamma la atención el 75 y 100 (id 1365 y 1490)
+Bebes y Niños que fuman (id 8, 417, 1171, 1432).
 
 
-Sitio
-Los valores posibles de Sitio deberían ir de 1 a 7. Sin embargo tenemos valores mayores (ID 800 y 907)
 
-Temperatura
-Hay dos valores de temperatura que son extraños: 94 y 131 (id 1112 y 1157)
 
-Autos
-Hay un valor atípico en Autos que es 2680 autos en a la manzana (id 836).
-Hya un valor que no corresponde 74.5 (id 1374)
+- (e) Elimine de la base los valores que no son posibles y que seguramente corresponde a un error de tipeo. Detalle valores/registros que le hayan llamado la atención pero no deban ser eliminados necesariamente
 
-Cigarrillos
-Cigarrilos 75 y 100 (id 1365 y 1490)
-Niños que fuman (id 8, 417, 1171, 1432)
+
+
 
 Eliminamos registros
 ```{r}
@@ -455,10 +453,31 @@ ids <- c(1039,1112,1157,319,1466,398,1490,69,836)
 internet <- internet[-which(datosEj2$ID %in% ids),]
 ```
 
+
 Niños que fuman
 ```{r}
 internet %>% filter(Edad < 12 & Cigarrillos >0)
 ```
+
+
+
+```{r}
+intTem<-internet%>%select(Temperatura)%>%mutate(temperatura=ifelse(Temperatura>40,NA,Temperatura))
+
+intAut<-internet%>%select(Autos)%>%mutate(autos=ifelse(Autos>200|Autos<0,NA,Autos)) 
+
+intEd<-internet %>%select(Edad)%>%mutate(edad=ifelse(Edad>100|Edad<5,NA,Edad))
+
+intUso<-internet%>%select(Uso)%>%mutate(uso=ifelse(Uso<0,NA,Uso))
+
+intSit<-internet%>%select(Sitio)%>%mutate(sitio=ifelse(Sitio>7,NA,Sitio))
+
+```
+
+
+
+
+
 
 - (f) ¿Para cuáles de las variables tiene sentido calcular la media? ¿Y la mediana?¿Para cuáles de las variables tiene sentido calcular la media? ¿Y la
 mediana?
