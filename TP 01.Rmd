@@ -54,6 +54,7 @@ library(plotly)
 library(fmsb)
 library(geomtextpath)
 library(MASS)
+library(ggridges)
 ```
 
 
@@ -83,12 +84,15 @@ juez2=recepcionistas[,5:7]
 #calculamos los promedios por candidato para cada juez
 prom_j1=apply(juez1,1,mean)
 prom_j2=apply(juez2,1,mean)
+
 #buscamos el máximo promedio por juez y vemos a quien corresponde
 cand=recepcionistas%>%dplyr::select(candidatos)%>%unlist()
 max_j1=cand[which.max(prom_j1)]
 max_j1
+
 max_j2=cand[which.max(prom_j2)]
 max_j2
+
 #coinciden los máximos? No coinciden.
 ```
 
@@ -146,6 +150,9 @@ summary(punt_stand)
 
 Llevar las variables a media 0 y desvío 1 es equivalente a decir que se la convierte en una distribución normal. Hacemos esto para poder trabajar con más facilidad con los cálculos y poder comparar distribuciones de forma más fácil, eliminando las diferencias de criterio entre jueces.
 
+Si el valor es negativo significa que está por debajo de la media.
+Mariana se destaca en idiomas, y le va mal en el cordialidad con la puntuacion de ambos jueces.
+
 
 
 -  (d) Transformar las puntuaciones de modo tal que cada candidata tenga para cada juez media 0 y dispersión 1. ¿Cuál sería el objetivo de esta transformación?
@@ -153,13 +160,17 @@ Llevar las variables a media 0 y desvío 1 es equivalente a decir que se la conv
 
 ```{r}
 sal2=data.frame(cand,t(t(juez1)%>%scale()%>%round(2)))
+
 rownames(sal2)<-NULL
+
 sal2 %>%
   kbl(caption = "Puntuaciones Estandarizadas Juez 1") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 
 sal3=data.frame(cand,t(t(juez2)%>%scale()%>%round(2)))
+
 rownames(sal3)<-NULL
+
 sal3 %>%
   kbl(caption = "Puntuaciones Estandarizadas Juez 2") %>%
   kable_classic(full_width = F, html_font = "Cambria")
@@ -167,6 +178,7 @@ sal3 %>%
 
 Entiendo que la utilidad de esto es normalizar los criterios de juicio a una misma escala para que sea comparable que evaluo mas o menos cada juez en relación a su criterio base, no interesa mucho el nivel general que cada uno asigne sino la diferencia entre los candidatos. (pp57 item 2.5.2)
 
+Alejandra y Mariana tienen algo parecido para el primer juez, que ven? Que les fue bien en idioma.
 
 
 
@@ -176,22 +188,33 @@ Entiendo que la utilidad de esto es normalizar los criterios de juicio a una mis
 ```{r}
 #damos nueva forma a los datos del juez 1
 # dj1= gather(sal2, key="rubro", value="valor", cord.juez1:idiom.juez1)
-dj1= gather(sal2, key="rubro", value="valor", cord.juez1:idiom.juez1)
+dj1= gather(sal2, key="rubro", value="valor", cord.juez.1:idiom.juez1)
 dj1
+
 RUBRO=as.factor(dj1$rubro)
 Candi=as.factor(dj1$cand)
+
 plot1=ggplot(dj1,aes(x=RUBRO,y=valor))+geom_line(aes(x=RUBRO,y=valor,group =Candi,color=Candi))+ labs(title = "juez 1") +
     theme(axis.text.x  = element_text(angle=90))
+
 #damos nueva forma a los datos del juez 2
-dj2= gather(sal3, key="rubro", value="valor", cord.juez2:idiom.juez2)
+dj2= gather(sal3, key="rubro", value="valor", cord.juez.2:idiom.juez2)
 dj2
+
 Rubro=as.factor(dj2$rubro)
 Candi=as.factor(dj2$cand)
+
 plot2=ggplot(dj2,aes(x=Rubro,y=valor))+geom_line(aes(x=Rubro,y=valor,group =Candi,color=Candi))+ labs(title = "juez 2")+theme(axis.text.x  = element_text(angle=90))
 ggarrange(plot1,plot2)
 ```
 
-Lo que se vé es que ambos jueces puntuaron diferente..
+Lo que se vé es que ambos jueces puntuaron diferente.
+Conclusiones:
+Juez1: es muy exigente con el idioma, a toda las candidatas tienen poco idioma. Luego, tdas tienen forma de campana.
+Juez2: fue un poco venevolente cn el tema del idioma, hay 2 que le fue bien con el idioma, pero a mariana no le fue bien en presencia.
+¿Quien es mejor puntuando? el juez2, porque es mas facil de distinguir entre las chicas.
+
+
 
 # Ejercicio 2
 
@@ -200,17 +223,25 @@ Lo que se vé es que ambos jueces puntuaron diferente..
 ### (Datos: Internet2013.xls)
 
 Se han registrado sobre 1500 individuos las variables siguientes:
-  - ID: número de identificación del registro.
-  - Nacionalidad
-  - Edad: cumplida en años
-  - Sexo: Masculino (1) Femenino (2)
-  - Estatura: en m
-  - Sitio: sitio preferido al que se conecta; 1- chat 2 - correo electrónico 3-
-  - buscadores 4 – software 5 – música 6 – deportes 7 - otros
-  - Uso: Tiempo de uso promedio por día en minutos
-  - Temperatura: media anual de la zona de residencia
-  - Autos: cantidad de autos en la manzana donde reside
-  - Cigarrillos: Cantidad de cigarrillos consumidos mientras utiliza Internet
+**id** debe ser siempre categorico.
+
+**Nacionalidad** Categórica
+
+**Edad**: continua discretizada
+
+**Sexo**: categórica Masculino (1) Femenino (2)
+
+**Estatura**: cuantitativa continua expresada en m
+
+**Sitio**: categórica. Sitio preferido (1-chat, 2-correo, 3-buscadores, 4-software, 5-musica, 6-deportes, 7-otros)
+
+**Uso**: cuantitativa continua. Tiempo promedio por dia en minutos
+
+**Temperatura**: cuantitativa continua. Media anual de la zona de residencia
+
+**Autos**: cuantitativa discreta. Cantidad de autos en la manzana donde reside
+
+**Cigarrillos**: cuantitativa discreta. Cantidad de cigarrillos consumidos mientras utiliza internet
 
 ```{r}
 # leemos la base de datos
@@ -218,7 +249,8 @@ internet <- read_excel("./csv/internet2013.xls")
 internet
 ```
 
-- (a) Clasificar las variables de la base. Para las variables numéricas construir un gráfico de coordenadas paralelas.
+- (a) Clasificar las variables de la base. 
+      Para las variables numéricas construir un gráfico de coordenadas paralelas.
 
 Nacionalidad Categórica
 
@@ -249,22 +281,22 @@ print(tipos_de_variables)
 Gráfico de coordenadas paralelas para variables numericas
 
 ```{r}
+# Agrupado por Nacionalidad
+colPalette <- c("#596791","#565318","#32CD32","#FF69B4","#FF4500","#20B2AB")
+
 grafica <- ggparcoord(internet, columns=c(3,5,7:10), groupColumn="Nacionalidad")
 grafica+theme_bw()
+
+# Agrupado por Uso
+grafica1 <- ggparcoord(internet, columns=c(3,5,7:10), groupColumn="Uso")
+grafica1+theme_bw()
 ```
 
 
-
-```{r}
-colPalette <- c("#596791","#565318","#32CD32","#FF69B4","#FF4500","#20B2AB")
-ggparcoord(internet, columns=c(3,5,7:10),
-           groupColumn="Nacionalidad",
-           showPoints=TRUE)+scale_color_manual(values = colPalette) + theme_bw()
-#graf1+ facet_wrap(.~Variedad,nrow=2)
-```
-
-Esta gráfica no es adecuada para visualizar tantos individuos y conviene cuando los datos están agrupados.
-
+## Esta gráfica no es adecuada para visualizar tantos individuos y conviene cuando los datos están agrupados. Podemos ver algunos outliers, pero más que eso no. 
+## Muy poco se puede ver por ejemplo el punto alto de autos y no mucho mas.
+## No se puede visualizar correctamente porque el grafico de coordenadas paralelas esta diseñado para ver como maximo 3 grupos.
+## Por defecto, este gráfico estandariza, para poder comparar los distintos valores.
 
 
 - (b) Construir la tabla de frecuencias de la variable sexo. ¿Hay algún valor que llame la atención? ¿Qué tipo de error considera que es?
@@ -272,27 +304,10 @@ Esta gráfica no es adecuada para visualizar tantos individuos y conviene cuando
 
 **Sexo**
 ```{r}
-valores_unicos <- internet %>% distinct(internet$Sexo)
-valores_unicos
+internet %>% dplyr::select(Sexo)%>%table()
 ```
 
-
-```{r}
-internet$Sexo %>% table()
-```
-
-
-```{r}
-tabla_frecuencias_sexo <- table(factor(internet$Sexo))
-df_frecuencias <- as.data.frame(tabla_frecuencias_sexo)
-
-# Renombrar las columnas
-colnames(df_frecuencias) <- c("Valor", "Frecuencia")
-
-# Mostrar la tabla de frecuencias
-print(df_frecuencias)
-```
-Hay un valor 0, eso no corresponde a ninguna opcion tabulada, parece ser un error de tipeo.
+#### Hay un valor 0, eso no corresponde a ninguna opcion tabulada, parece ser un error de tipeo.
 
 
 
@@ -302,29 +317,14 @@ Hay un valor 0, eso no corresponde a ninguna opcion tabulada, parece ser un erro
 
 **Edad**
 ```{r}
-internet %>% arrange(Edad)
+internet%>%dplyr::select(Edad)%>%arrange(-Edad) 
+internet%>%dplyr::select(Edad)%>%arrange(Edad) 
+internet%>%dplyr::select(Edad)%>%summary()
 ```
 
-```{r}
-internet$Edad%>%summary()
-```
+#### Claramente hay errores de carga. El signo negativo es imposible en la edad y 120, 180 y 280 tampoco son años posibles (personas centenarias). Por otro lado, hay datos raros, como el registro 1432 donde un bebé 1 año mide 1,65.
+#### Los id respectivos son 319, 1466, 398, 661, 1432.
 
-
-Claramente hay un error de carga. El signo negativo es imposible en la edad y 120, 180 y 280 tampoco son años posibles (personas centenarias). Por otro lado, hay atos raros, como el registro 1432 donde un bebé 1 año mide 1,65.
-
-```{r}
-tabla_frecuencias_edad <- table(factor(internet$Edad))
-df_frecuencias_edad <- as.data.frame(tabla_frecuencias_edad)
-
-# Renombrar las columnas
-colnames(df_frecuencias_edad) <- c("Valor", "Frecuencia")
-
-# Mostrar la tabla de frecuencias
-print(df_frecuencias_edad)
-```
-
-Hay 3 registros con edades superarios a 100 (120,180,200) cuyos id respectivos son 319, 1466 y 398. Hay registros con edades negativas, cuyo od es 661. Claramente estos son errores de carga.
-Después hay algo extraño, una persona de 1 año con una altura de 1,61 (id = 1432)
 
 
 
@@ -333,28 +333,12 @@ Construir la tabla de frecuencias de la variable Sitio. ¿Encuentra algún valor
 
 ```{r}
 internet %>% arrange(Sitio)
-```
-
-
-```{r}
+internet %>% arrange(-Sitio)
 internet$Sitio%>%summary()
+internet%>%dplyr::select(Sitio)%>%table()
 ```
 
-
-```{r}
-tabla_frecuencias_sitio <- table(factor(internet$Sitio))
-df_frecuencias_sitio <- as.data.frame(tabla_frecuencias_sitio)
-
-# Renombrar las columnas
-colnames(df_frecuencias_sitio) <- c("Valor", "Frecuencia")
-
-# Mostrar la tabla de frecuencias
-print(df_frecuencias_sitio)
-```
-
-
-Los sitios 8 y 28 no existen, debe ser un error de carga o tipeo.
-Los valores posibles de Sitio deberían ir de 1 a 7. Sin embargo tenemos valores mayores (ID 800 y 907)
+#### Los sitios 8 y 28 no existen, debe ser un error de carga o tipeo. Los valores posibles de Sitio deberían ir de 1 a 7. Sin embargo tenemos valores mayores (ID 800 y 907)
 
 
 
@@ -364,80 +348,39 @@ Los valores posibles de Sitio deberían ir de 1 a 7. Sin embargo tenemos valores
 **Temperatura**
 
 ```{r}
+internet[,8] %>% arrange(Temperatura)
 internet[,8] %>% arrange(-Temperatura)
-```
-
-```{r}
-tf_temp <- table(factor(internet$Temperatura))
-df_temp <- as.data.frame(tf_temp)
-
-# Renombrar las columnas
-colnames(df_temp) <- c("Valor", "Frecuencia")
-
-# Mostrar la tabla de frecuencias
-print(df_temp)
-```
-```{r}
-internet[,8]%>%summary()
+internet$Temperatura%>%summary()
+#internet%>%dplyr::select(Temperatura)%>%table()
 
 ```
 
-
-Temperatura
-Hay dos valores de temperatura que son extraños: 94 y 131 (id 1112 y 1157). Parecen ser errores de tipeo.
-
-
-
+#### Hay dos valores de temperatura que son extraños: 94 y 131 (id 1112 y 1157). Parecen ser errores de tipeo.
 
 
 **Autos**
 ```{r}
+internet[,9] %>% arrange(Autos)
 internet[,9] %>% arrange(-Autos)
-
-```
-```{r}
 internet[,9]%>%summary()
+
 ```
 
 
-```{r}
-tf_autos <- table(factor(internet$Autos))
-df_autos <- as.data.frame(tf_autos)
-
-# Renombrar las columnas
-colnames(df_autos) <- c("Valor", "Frecuencia")
-
-# Mostrar la tabla de frecuencias
-print(df_autos %>%  arrange(-Frecuencia) )
-```
-
-Hay un valor atípico en Autos que es 2680 autos en a la manzana (id 836). Hay un valor que no corresponde 74.5 (id 1374). Ambos parecen ser errores de tipeo.
+#### Hay un valor atípico en Autos que es 2680 autos en a la manzana (id 836). Hay un valor que no corresponde 74.5 (id 1374). Ambos parecen ser errores de tipeo.
 
 
 
 **Cigarrillos**
 ```{r}
+internet[,10] %>% arrange(Cigarrillos)
 internet[,10] %>% arrange(-Cigarrillos)
-
-```
-```{r}
 internet[,10]%>%summary()
 ```
 
 
-```{r}
-tf_cig <- table(factor(internet$Cigarrillos))
-df_cig <- as.data.frame(tf_cig)
-
-# Renombrar las columnas
-colnames(df_cig) <- c("Valor", "Frecuencia")
-
-# Mostrar la tabla de frecuencias
-print(df_cig)
-```
-
-Llamma la atención el 75 y 100 (id 1365 y 1490)
-Bebes y Niños que fuman (id 8, 417, 1171, 1432).
+#### Llamma la atención el 75 y 100 (id 1365 y 1490).
+#### Bebes y Niños que fuman (id 8, 417, 1171, 1432).
 
 
 
@@ -445,44 +388,41 @@ Bebes y Niños que fuman (id 8, 417, 1171, 1432).
 - (e) Elimine de la base los valores que no son posibles y que seguramente corresponde a un error de tipeo. Detalle valores/registros que le hayan llamado la atención pero no deban ser eliminados necesariamente
 
 
-
-
-Eliminamos registros
-```{r}
-ids <- c(1039,1112,1157,319,1466,398,1490,69,836)
-internet <- internet[-which(datosEj2$ID %in% ids),]
-```
-
-
 Niños que fuman
 ```{r}
-internet %>% filter(Edad < 12 & Cigarrillos >0)
+internet %>% filter(Edad < 12 & Cigarrillos > 0)
 ```
 
 
 
 ```{r}
-intTem<-internet%>%select(Temperatura)%>%mutate(temperatura=ifelse(Temperatura>40,NA,Temperatura))
+intTem<-internet%>%dplyr::select(Temperatura)%>%mutate(temperatura=ifelse(Temperatura>40,NA,Temperatura))
 
-intAut<-internet%>%select(Autos)%>%mutate(autos=ifelse(Autos>200|Autos<0,NA,Autos)) 
+#- Autos: | es o
+intAut<-internet%>%dplyr::select(Autos)%>%mutate(autos=ifelse(Autos>200|Autos<0,NA,Autos)) 
 
-intEd<-internet %>%select(Edad)%>%mutate(edad=ifelse(Edad>100|Edad<5,NA,Edad))
+#- Edad
+intEd<-internet %>%dplyr::select(Edad)%>%mutate(edad=ifelse(Edad>100|Edad<5,NA,Edad))
 
-intUso<-internet%>%select(Uso)%>%mutate(uso=ifelse(Uso<0,NA,Uso))
+#- Uso
+intUso<-internet%>%dplyr::select(Uso)%>%mutate(uso=ifelse(Uso<0,NA,Uso))
 
-intSit<-internet%>%select(Sitio)%>%mutate(sitio=ifelse(Sitio>7,NA,Sitio))
+#- Sitio
+intSit<-internet%>%dplyr::select(Sitio)%>%mutate(sitio=ifelse(Sitio>7,NA,Sitio))
+
 
 ```
 
 
 
+#### No se borran los outliers. Los errores de tipeo si se pueden sacar.
 
 
+- (f) ¿Para cuáles de las variables tiene sentido calcular la media? ¿Y la mediana? ¿Para cuáles de las variables tiene sentido calcular la media? ¿Y la mediana?
 
-- (f) ¿Para cuáles de las variables tiene sentido calcular la media? ¿Y la mediana?¿Para cuáles de las variables tiene sentido calcular la media? ¿Y la
-mediana?
+#### Media para las cuantitativas solamente y mediana para las ordinales o cuantitativas.
 
-En las variables númericas tiene sentido calcular la media. En el caso de variables categoricas como sexo, sitio y nacionalidad uno no puede calcularlas porque no son variables ni siquiera ordinales (que permitirian al menos calcular la mediana). Ahora para saber si tiene sentido calcular la mediana como mediad de tendencia central hay que ver si las distribuciones son simétricas. Podemos aplicar para esto el coeficiente de fisher.
+#### En las variables númericas tiene sentido calcular la media. En el caso de variables categoricas como sexo, sitio y nacionalidad uno no puede calcularlas porque no son variables ni siquiera ordinales (que permitirian al menos calcular la mediana). Ahora para saber si tiene sentido calcular la mediana como medida de tendencia central hay que ver si las distribuciones son simétricas. Podemos aplicar para esto el coeficiente de fisher.
 
 ```{r}
 df <- internet[c(3,5:6,7:9)] 
@@ -490,60 +430,115 @@ df_estandarizado <- scale(df)
 apply(df_estandarizado, 2,function(x) skewness(x)) 
 ```
 
-El uso y los cigarrillos tienen una asimetria hacia la derecha (cola larga a la izquierda). La estatura tiene un poco de asimetría también, pero es menor a 0.5, que es considerado el límite usual. Las otras variables no son asimétricas. Por tal motivo, calcular la mediana tiene sentido en aquellas variables asimétricas (aunque en el resto de las variables puede calcularse igual, como ya se mencionó).
+#### El uso y los cigarrillos tienen una asimetria hacia la derecha (cola larga a la izquierda). La estatura tiene un poco de asimetría también, pero es menor a 0.5, que es considerado el límite usual. Las otras variables no son asimétricas. Por tal motivo, calcular la mediana tiene sentido en aquellas variables asimétricas (aunque en el resto de las variables puede calcularse igual, como ya se mencionó).
 
-
-Media, Mediana y Moda
-```{r}
-library(modeest)
-#install.packages("modeest")
-```
 
 
 ```{r}
-df <- internet %>% select(Sexo, Edad, Sitio, Temperatura, Autos, Cigarrillos)
-medias=round(apply(df,2,mean),2) 
-medianas=round(apply(df,2,median),2)
-#moda <- mfv(edades_no_negativas$Edad)
-desv.standard=round(apply(df,2,sd),2)
-modas <- c(mfv(df$Sexo), mfv(df$Edad), mfv(df$Sitio), mfv(df$Temperatura), mfv(df$Autos), mfv(df$Cigarrillos))
-resumenes = rbind(medias,medianas, modas, desv.standard)
-resumenes
 
+#- Calculamos la media de edad y la mediana de edad, con na.rm = TRUE nos omite para el calculo los valores nulos
+
+intEd%>%summarise(Media=mean(edad,na.rm=TRUE),Mediana=median(edad,na.rm=TRUE))
+
+
+#- Si la media es muy parecida a la mediana se dice que la variable es simetrica
+#- Si no lo son, esto quiere decir que la media esta traccionada por algun punto o conjunto de puntos
+# si la mediana es mas chica que la media, tengo asimetria derecha.
 ```
 
+**son valores similares, no impresiona asimetría**.
 
 ```{r}
-# Estandarizar las columnas del dataframe
-df_estandarizado <- scale(df)
 
-# Crear un boxplot para las columnas estandarizadas
-boxplot(df_estandarizado,
-        main = "Boxplot de Datos Estandarizados",
-        ylab = "Valores Estandarizados",
-        #col = c("lightblue", "lightgreen", "lightpink"),
-        #border = c("blue", "green", "red"),
-        horizontal = FALSE
-        )
+
+intAut%>%summarise(Media=mean(autos,na.rm=TRUE),Mediana=median(autos,na.rm=TRUE))
 ```
+
+**no hay asimetría aparentemente.**
 
 ```{r}
-boxplot(df$Autos)
+intUso%>%summarise(Media=mean(uso,na.rm=TRUE),Mediana=median(uso,na.rm=TRUE))
+
+
+
+
 ```
+
+**Acá se observa asimetría por la derecha, la media es muy superior a la
+mediana**.
+
+```{r}
+intTem%>%summarise(Media=mean(temperatura,na.rm=TRUE),Mediana=median(temperatura,na.rm=TRUE))
+
+```
+
+**no se aprecia asimetría en esta variable** .
+
+
+
+
 
 - (g) ¿Cuáles de las variables le parecen simétricas a partir de estos resúmenes? Confirme estas observaciones mediante un boxplot.
 
+Las variables con mayor simetria son las correspondientes a:
+
+-   Autos
+-   Edad
+
 ```{r}
-data_mod <- melt(internet, id.vars='ID', 
-                  measure.vars=c('Edad', 'Autos','Temperatura','Estatura','Uso','Cigarrillos'))
-
-ggplot(data_mod) +
-geom_boxplot(aes(x=ID, y=value, fill=variable,alpha=0.2)) +
-  theme_minimal()
+internet %>% dplyr::select(Temperatura) %>% ggplot(aes(x=Temperatura))+
+  geom_boxplot(fill = 'blue', color='black')
 ```
-Acá se puede ver como uso y cigarrillos tienen outliers hacia arriba que le dan una asimetría positiva (a la derecha). Esto esta dado porque tiene la mayor parte de los datos en los valores más pequeños y algunos en la parte más larga que le “alargan” la cola.
 
 
+```{r, echo = FALSE}
+internet %>% dplyr::select(Nacionalidad,
+                    Edad,
+                    Estatura,
+                    Uso,
+                    Temperatura,
+                    Autos,
+                    Cigarrillos) %>% 
+  mutate_if(is.numeric, ~scale(.)) %>% 
+  pivot_longer(names_to ="Variable", values_to = 'Valor', cols = 2:7) %>% 
+  ggplot(aes(x=Valor, y= Variable))+
+  geom_boxplot(alpha=0.5)+
+  xlim(-3,3)
+```
+#### Acá se puede ver como uso y cigarrillos tienen outliers hacia arriba que le dan una asimetría positiva (a la derecha). Esto esta dado porque tiene la mayor parte de los datos en los valores más pequeños y algunos en la parte más larga que le “alargan” la cola.
+
+```{r}
+internet %>% dplyr::select(Nacionalidad,
+                    Edad,
+                    Estatura,
+                    Uso,
+                    Temperatura,
+                    Autos,
+                    Cigarrillos) %>% 
+  mutate_if(is.numeric, ~scale(.)) %>% 
+  pivot_longer(names_to ="Variable", values_to = 'Valor', cols = 2:7) %>% 
+  ggplot(aes(x=Valor, y= Variable, fill=Variable))+
+  geom_density_ridges(alpha=0.5)+
+  scale_fill_brewer(palette = "Set2")+
+  xlim(-3,3)
+```
+
+```{r warning=F, message=F}
+internet %>% dplyr::select(Nacionalidad,
+                    Edad,
+                    Estatura,
+                    Uso,
+                    Temperatura,
+                    Autos,
+                    Cigarrillos) %>% 
+  mutate_if(is.numeric, ~scale(.)) %>% 
+  pivot_longer(names_to ="Variable", values_to = 'Valor', cols = 2:7) %>% 
+  ggplot(aes(x=Valor, y= Variable, fill=Variable))+
+  geom_density_ridges(alpha=0.5)+
+  scale_fill_brewer(palette = "Set2")+
+  xlim(-3,3)+
+  facet_wrap(~Nacionalidad)
+```
 
 - (h) Calcular la desviación intercuartil y detectar presencia de valores salvajes
 moderados y severos.
@@ -563,55 +558,46 @@ resumenes
 
 Se denomina  outliers moderados a los datos cuya distancia a uno de los extremos de la caja es mayor que 1.5 veces RI y menor que 3 veces el RI. Mientras que los outliers severos son los datos que están a una distancia mayor a 3 veces el RI de uno de los extremos de la caja.
 
-
+#### Límites para variable Edad
 ```{r}
 Q1_edad = quantile(internet$Edad,0.25) 
 Q3_edad = quantile(internet$Edad,0.75) 
 
-#Q3_sitio = quantile(internet$Sitio,0.75) 
-#Q3_temp = quantile(internet$Temperatura,0.75)
-#Q3_autos = quantile(internet$Autos,0.75) 
-#Q3_ciga = quantile(internet$Cigarrillos,0.75) 
 
 edad_out_moderado <- c(LI1 = Q1_edad - 1.5*resumenes[1], LS1 = Q3_edad + 1.5*resumenes[1])
 edad_out_severo <- c(LI2 = Q1_edad - 3*resumenes[1], LS2 = Q3_edad + 3*resumenes[1])
 out_edad <- c(edad_out_moderado, edad_out_severo)
 out_edad
-#sitio <- c(LI1 = Q3_sitio - 1.5*resumenes[2], LS1 = Q3_sitio + 1.5*resumenes[2])
-#temp <- c(LI1 = Q3_temp - 1.5*resumenes[3], LS1 = Q3_temp + 1.5*resumenes[3])
-#autos <- c(LI1 = Q3_autos - 1.5*resumenes[4], LS1 = Q3_autos + 1.5*resumenes[4])
-#ciga <- c(LI1 = Q3_ciga - 1.5*resumenes[5], LS1 = Q3_ciga + 1.5*resumenes[5])
 
-#limites_outliers = rbind(edad, sitio, temp, autos, ciga)
 
-#colnames(limites_outliers) <- c( "Li", "LS")
-#limites_outliers
+
+
 ```
 
 
-
-Outliers Moderados a la izquierda en Edad
 ```{r}
+# Outliers Moderados a la derecha en Edad
+internet %>% filter(Edad >= out_edad[2] & Edad < out_edad[3])
+# Outliers Severos a la izquierda en Edad
+internet %>% filter(Edad <= out_edad[3])
+# Outliers Severos a la derecha en Edad
+internet %>% filter(Edad >= out_edad[4])
+# Outliers Moderados a la izquierda en Edad
 internet %>% filter(Edad <= out_edad[1] & Edad > out_edad[3])
 ```
 
-Outliers Moderados a la derecha en Edad
-```{r}
-internet %>% filter(Edad >= out_edad[2] & Edad < out_edad[3])
-```
 
-Outliers Severos a la izquierda en Edad
-```{r}
-internet %>% filter(Edad <= out_edad[3])
-```
+#### Deteccion de outliers con la funcion del profesor.
 
-Outliers Severos a la derecha en Edad
 ```{r}
-internet %>% filter(Edad >= out_edad[4])
+out_detect(unlist(internet$Edad))
+valores <- c(319,398,661,1365,1466,1490) ### estos son los IDs que nos devuelve la funcion out_detect(...)
+subset(internet, ID %in% valores) %>% arrange(Edad)
 ```
 
 
-Codigo completo
+
+### Cant. de outliers por variable
 ```{r}
 Q <- as_data_frame(apply(internet[c(3,5,7:10)], 2, function(x) quantile(x, probs=c(.25, .75), na.rm = FALSE)) )
 
@@ -682,6 +668,25 @@ outliers
 ```
 
 
+===============================================
+# Función para detección de outliers (PROFESOR)
+===============================================
+
+```{r}
+out_detect<-function(datos){
+ RI<- IQR(datos)
+ VmS<-quantile(datos,probs=0.75)+1.5*RI
+ VmI<-quantile(datos,probs=0.25)-1.5*RI
+ VLS<-quantile(datos,probs=0.75)+3*RI
+ VLI<-quantile(datos,probs=0.25)-3*RI
+ severos<-which(datos>VLS|datos<VLI)
+ outliers<-which(datos>VmS|datos<VmI)
+  return(list("outliers=",outliers,"severos=",severos))
+}
+
+
+```
+
 
 
 # Ejercicio 3
@@ -704,18 +709,20 @@ zoo-métricas:
 
 ```{r}
 # leemos la base de datos
-gorriones <- read_excel("../../gorriones.xlsx")
+gorriones <- read_excel("../csv/gorriones.xlsx")
 gorriones
 ```
  Largototal, extension, cabeza, humero, esternon son variables continuas (mediciones)
  por su parte sobrevida es categórica (la vamos a considerar un factor).
+
+
 
  - b Confeccionar un informe para cada variable (univariado).
 
 ```{r}
 gorriones%>%str() # nos muestra que hay en cada variable
 gorriones%>%glimpse() # nos muestra como esta almacenada cada variable
-gorriones %>%select(largototal:esternon) %>% summary() # nos hace un resumen para cada variable
+gorriones %>%dplyr::select(largototal:esternon) %>% summary() # nos hace un resumen para cada variable
 sobrev=as.factor(gorriones$sobrevida)
 ```
 
@@ -724,9 +731,7 @@ summary(gorriones)
 ```
 
 
- - c Realizar en el caso que corresponda un histograma. Ensayar el número
-de intervalos que conviene en cada variable, indicar si utiliza algún
-criterio.
+ - c Realizar en el caso que corresponda un histograma. Ensayar el número de intervalos que conviene en cada variable, indicar si utiliza algún criterio.
 
 ```{r}
 ggplot(gorriones) + 
@@ -753,11 +758,19 @@ que toma valores muy distintos en ambos grupos? Analizar en todos los
 casos la presencia de outliers.
 
 ```{r}
+#- Grafico con cintura esto lo realizamos a proposito para:
+
+#- Para visualizar si el intervalo de confianza de la mediana de uno, se solapa o no con el intervalo de confianza de la mediana del otro
+
+#- En este caso que es largo total se solapan o no se solapan?
 ggplot(gorriones,aes(x=sobrev,y=largototal,fill=sobrev))+geom_boxplot(notch=TRUE)+
   scale_fill_manual(values=c("#FE2E2E","#819FF7")) +# cambiamos los colores
   xlab("Sobrevida")+ylab("Largo Total")
 ```
+
+
 ```{r}
+#- Boxplot adentro de un grafico de violin
 gorriones %>% 
     ggplot(aes(x = sobrev, 
              y = cabeza)) +
@@ -770,7 +783,7 @@ gorriones %>%
   scale_color_manual(values = c("#00AFBB", "#E7B800"))
 ```
 ```{r}
-
+#- Otro ejemplo muy parecido
 gorriones %>% 
    ggplot(aes(x = sobrev, 
              y = humero)) +
@@ -779,14 +792,19 @@ gorriones %>%
   scale_fill_manual(values = c( "#FC4E07","brown")) +
   theme(legend.position = "none")
 ```
+
+
 ```{r}
 gorriones %>% 
     ggplot(aes(x = sobrev, 
              y = esternon)) +
-  geom_sina(aes(color = sobrev), size = 2)+
+  geom_sina(aes(color = sobrev), size = 2)+ # Agrega puntos de dispersion al grafico, cada punto representa una observacion
+  #- Aes se utiliza para colorear segun sobrevivieron o no 
   scale_color_manual(values = c( "purple", "#FC4E07")) +
   theme(legend.position = "none")
 ```
+
+
 ```{r}
 g2 <- gorriones %>%
   ggplot(aes(x=sobrev, y=extension, fill=sobrev)) + 
@@ -809,7 +827,7 @@ por el grupo de supervivencia (un color para cada grupo). ¿Observa
 alguna regularidad que pueda explicar la supervivencia?
 
 ```{r}
-gorr=gorriones%>%select(largototal:esternon)
+gorr=gorriones%>%dplyr::select(largototal:esternon)
 
 ggpairs(gorr,
         upper = list(continuous = "density", combo = "box_no_facet"),
@@ -817,14 +835,30 @@ ggpairs(gorr,
   theme_bw()
 ```
 
+```{r}
+#- Finalmente el ggpairs
+
+gorr=gorriones%>%dplyr::select(largototal:esternon)
+sobrev=factor(gorriones$sobrevida)
+ggpairs(gorr, aes(color=sobrev),
+        upper = list(continuous = "density", combo = "box_no_facet"),
+        lower = list(continuous = "points" , combo ="dot_no_facet"))+
+  theme_bw()
+
+#- Se evidencia en los de densidad de la diagonal que los que no sobrevivieron estan presentes en los extremos (mas grandes y mas chicos)
+```
+
+
 (f) Construir la matriz de diagramas de dispersión. ¿Considera que algún
 par de estas medidas están relacionadas? Estudiar si la asociación de algunas
 de estas medidas es diferente en alguno de los grupos
 
 ```{r}
+#- Correlograma entre variacion de las variables
 M= cor(gorr)
 corrplot.mixed(M, upper = "pie",     
          lower = "ellipse")
+#  Interpretacion por ejemplo entre extension y humero 76 % de correlacion lineal
 ```
 
 # Ejercicio 4
@@ -843,7 +877,7 @@ Se han registrado respecto de 27 razas de perros las siguientes características
 
 ```{r}
 # leemos la base de datos
-razaperros <- read_excel("../../razaperros.xls")
+razaperros <- read_excel("../csv/razaperros.xls")
 razaperros
 ```
 
@@ -861,10 +895,22 @@ variables <- razaperros[, c("tamaño", "peso", "velocidad", "inteligencia", "afe
 # Etiqueta las variables con los nombres de las razas
 rownames(variables) <- razaperros$raza
 
-# Crea el gráfico de estrellas utilizando la función stars()
-stars(variables, key.loc = c(0.7, 0.95), main = "Gráfico de Estrellas por Raza", draw.segments=T)
+# Grafico Estrellas 1: Crea el gráfico de estrellas utilizando la función stars()
+stars(variables, 
+      key.loc = c(0.05, 0.8), 
+      main = "Gráfico de Estrellas por Raza", 
+      draw.segments=T)
+
+
+
+
+# Grafico Estrellas 2
+stars(razaperros[,2:6], full=F, cex=0.8, flip.labels = T, labels = razaperros$raza, col.stars = cm.colors(9))
 
 ```
+
+
+
 
 ```{r}
 #Funciones auxiliares
@@ -917,21 +963,23 @@ par <- par(opar)
 ```
 
 
+```{r}
+#raza
+raza = razaperros[2,2:7]
+data <- rbind(rep(3,6) , rep(0,6) , raza)
+ 
+# Check your data, it has to look like this!
+# head(data)
+
+# The default radar chart 
+radarchart(data)
+```
+
+
+
+
 (b) Idem por función
 
-- Por función: caza
-```{r}
-# Supongamos que tienes un dataframe llamado df
-# Selecciona las columnas relevantes para el gráfico
-datos_caza <- razaperros %>% filter(funcion == "caza") %>%  select("tamaño", "peso", "velocidad", "inteligencia", "afectividad")
-
-# Etiqueta las variables con los nombres de las razas
-rownames(datos_caza) <- razaperros[razaperros$funcion == "caza"] 
-
-
-# Crea el gráfico de estrellas utilizando la función stars()
-stars(variables, key.loc = c(0.7, 0.95), main = "Gráfico de Estrellas por Función", draw.segments=T)
-```
 
 - General
 ```{r}
@@ -1002,7 +1050,7 @@ par <- par(opar)
 (d) En el primer gráfico se observan estrellas similares. ¿Le parece que las
 razas son parecidas?
 
-El tema es que significa “parecidas” si lo consideramos en relacion a las caracteristicas analizadas si, pero eso no quiere decir que podamos decir que son parecidas en el resto de los aspectos o que esten relacionadas de alguna manera.
+##### El tema es que significa “parecidas” si lo consideramos en relacion a las caracteristicas analizadas si, pero eso no quiere decir que podamos decir que son parecidas en el resto de los aspectos o que esten relacionadas de alguna manera.
 
 
 
@@ -1016,8 +1064,8 @@ El tema es que significa “parecidas” si lo consideramos en relacion a las ca
 
 ```{r}
 # leemos la base de datos
-gorriones <- read_excel("../../gorriones.xlsx")
-gorriones
+gorr <- read_excel("../csv/gorriones.xlsx")
+gorr
 ```
 
  - (a) Dimensión de la base de datos (n= número de observaciones, p= cantidad
@@ -1026,7 +1074,7 @@ de variables observadas sobre cada individuo).
 ```{r}
 View(gorriones)
 dim(gorriones) # la dimensión dice 7 columnas pero son 6 variables y 49 registros
-#la primer columna corresponde a el orden del registro
+# la primer columna corresponde a el orden del registro
 ```
 
 
@@ -1044,6 +1092,10 @@ Matriz de covarianzas
 ```{r}
 matriz_covarianzas_1=var(gorr) %>% round(3)
 matriz_covarianzas_1
+
+matriz_covarianzas_1[1,1] # Es la varianza del largo total
+matriz_covarianzas_1[2,2] # Es la varianza de la extension
+#- Y asi sucesivamente
 ```
 
 Matriz de correlación
@@ -1057,34 +1109,37 @@ matriz_correlacion_1
  - (c) Explicar que representa el elemento m11 de la matriz de varianzas y covarianzas,
 ídem para el elemento m31.
 
-Nota: m31 significa fila 3 columna 1
+#### Nota: m31 significa fila 3 columna 1
 
 **m11=var(largototal)**
 
 **m31=covarianza(largototal, cabeza)**
 
+
  - (d) Explicar que representa el elemento m22 de la matriz de correlaciones,
 ídem para el elemento m13.
 
-**m22=cor(extension,extension)=1** (todos los elementos diagonales son 1)
-**m13=m31=cor(largotal,cabeza)**
+**m22=cor(extension,extension)=1** (todos los elementos diagonales son 1, pq es la correlacion entre una variable consigo misma)
+**m13=m31=cor(largotal,cabeza)** (correlacion entre largototal y cabeza)
 
 
  - (e) Relacionar los elementos m21,m11 y m22 de la matriz de varianzas y covarianzas
 con el elemento m12 de la matriz de correlaciones.
 
-Matriz de variancias y covarianzas
+#### La profesora estableció esta relación:
+**corr(variable1,variable2)=cov(variable1,variable2)/raiz(var(variable1))*raiz(var(variable2))**
+
+#### Matriz de variancias y covarianzas
 m21 (extension, largo total) = 13.611
 m11 (largo total, largo total) = 13.354
 m22 (extension, extension) = 25.683
 
-Mtriz de correlaciones
+#### Matriz de correlaciones
 m12 (largo total, extension) = 0.735  
 
-m11 y m22 de la matriz de covarianzas son las varianzas de largo total(mcv11) y extension (mcv22), y m21 (mcv21) es la covarianza entre esas dos variables. m12 (mcr12) de la matriz de correlación es la correlación entre esas dos variables. Ahora, la correlación de pearson es la covarianza entre dos variables divida las desviaciones estandard de esas dos variables.
+#### m11 y m22 de la matriz de covarianzas son las varianzas de largo total(mcv11) y extension (mcv22), y m21 (mcv21) es la covarianza entre esas dos variables. m12 (mcr12) de la matriz de correlación es la correlación entre esas dos variables. Ahora, la correlación de pearson es la covarianza entre dos variables divida las desviaciones estandard de esas dos variables.
 
-  - (f) Hallar una nueva variable e incorporarla en la base de Gorriones: Diferencia entre el largo total y el largo del húmero. Llamémosla: Diferencia
-de Largos.
+  - (f) Hallar una nueva variable e incorporarla en la base de Gorriones: Diferencia entre el largo total y el largo del húmero. Llamémosla: Diferencia de Largos.
 
 ```{r}
 gorr["Diferencias"] <- gorr$largototal - gorr$humero
@@ -1092,8 +1147,7 @@ gorr["Diferencias"]
 ```
 
 
-(g) Calcular nuevamente el vector de medias y las matrices de varianzas y
-covarianzas y la matriz de correlaciones de la nueva base de datos. Relacionar el nuevo vector de medias con el anterior.
+(g) Calcular nuevamente el vector de medias y las matrices de varianzas y covarianzas y la matriz de correlaciones de la nueva base de datos. Relacionar el nuevo vector de medias con el anterior.
 
 Vector de medias
 ```{r}
@@ -1115,6 +1169,12 @@ matriz_correlacion_2
 
 **como relaciono los vectores de medias????**
 
+```{r}
+vector_medias_1
+vector_medias_2
+```
+
+
 (h) Hallar la traza de las cuatro matrices. Explicar el significado de cada uno
 de los resultados. ¿Qué traza/s no aumentan al aumentar una variable?
 Explique.
@@ -1122,10 +1182,11 @@ Explique.
 
 ```{r}
 trazas5 <- cbind(sum(diag(matriz_covarianzas_1)),sum(diag(matriz_correlacion_1)),sum(diag(matriz_covarianzas_2)),sum(diag(matriz_correlacion_2)))
+
 colnames(trazas5) <- c("Covarianza","Correlación","Covarianza nueva","Correlación nueva")
 trazas5 %>%   kbl(caption = "Trazas de las matrices") %>% kable_classic(full_width = F)
 ```
-… todas varian…la traza de las correlaciones va a sumar uno, ya que es una variable más… y la de varianza también ya que la misma siempre va a ser positiva… me pierdo en que es lo que no varia. Ahora esta claro que la ultima columna es perfectamente calculable con las columnas originales de la primer matriz. Es LD con las otras columnas, pero si yo agrego la variable es una columna mas y la traza cambia.
+#### Conclusión: todas varian…la traza de las correlaciones va a sumar uno, ya que es una variable más… y la de varianza también ya que la misma siempre va a ser positiva… me pierdo en que es lo que no varia. Ahora esta claro que la ultima columna es perfectamente calculable con las columnas originales de la primer matriz. Es LD con las otras columnas, pero si yo agrego la variable es una columna mas y la traza cambia.
 
 
 
@@ -1137,7 +1198,10 @@ trazas5 %>%   kbl(caption = "Trazas de las matrices") %>% kable_classic(full_wid
 
 ```{r}
 # leemos la base de datos
-recep <- read_excel("../../recepcionistas.xls")
+recep <- read_excel("./csv/recepcionistas.xls")
+
+names(recep)[names(recep) == 'cord.juez 1'] <- 'cord.juez1'
+names(recep)[names(recep) == 'cord.juez 2'] <- 'cord.juez2'
 recep
 ```
 
@@ -1148,7 +1212,7 @@ v_medias <- as_tibble(t(colMeans(recep[2:7])))
 colnames(v_medias) <- colnames(recep[2:7])
 v_medias
 ```
-Claramente en promedio la cordialidad es mejor valorada por el juez 1, en cuanto a la presencia el juez 2 valora ligeramente mejor. No hay diferencias en relación a el idioma.
+#### Claramente en promedio la cordialidad es mejor valorada por el juez 1, en cuanto a la presencia el juez 2 valora ligeramente mejor. No hay diferencias en relación a el idioma.
 
 
 
@@ -1219,7 +1283,7 @@ para los vectores de medianas?
 
 ```{r}
 # leemos la base de datos
-internet <- read_excel("../../internet2013.xls")
+internet <- read_excel("./csv/internet2013.xls")
 internet
 ```
 
